@@ -13,12 +13,12 @@
     // window.location.href = url;
     // // In your redirect callback page (http://localhost:5173/callback), grab the code from the URL
 
-    window.location.href = "http://localhost:3000/login";
+    window.location.href = "http://localhost:5173/user";
   }
 </script>
 
 <h2>Spotify app</h2>
-<button on:click={login}> Log in with Spotify </button>
+<button on:click={login}> Get user top track</button>
 
 <p>
   Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation

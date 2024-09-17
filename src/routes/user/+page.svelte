@@ -1,79 +1,44 @@
-<script>
+<script script lang="ts">
   import { onMount } from "svelte";
-  import { spotifyClientToken } from "../../store";
+  import type { Track } from "./types";
 
-  const tmpToken =
-    "BQCVnNx5-DMzIVwMedc69TZZLN9jJEcbxY0Q6nrPUjRPfGQgT77M9Xia9YWK1kDVMvLaG7WmVlc1HiTAIaIgtThi_TiDYcLbuW6HqYIyjDU-6G6apUqmAD6Dt_OVFhcErOP-exdXPiVYabP_AKTrWMHDuuMHaxMqlXgvutfOR1eIOilKC92pIrcoHkwrO_CsB448ISQqbKIJr6WjHzG4KW9CVU5UE7dTRFhVxbsFTfy72gzPXq9tRQN4kX4scioyzWOA2gtSMaYOgGunLlFfN7Df84tt6wWa";
-  /**
-   * @param {string} endpoint
-   * @param {string} method
-   * @param {undefined} [body]
-   */
-  async function fetchWebApi(endpoint, method, body) {
-    let token;
-    const unsubscribe = spotifyClientToken.subscribe((value) => {
-      token = value;
-    });
-    console.log(token);
+  // Authorization token that must have been created previously. See : https://developer.spotify.com/documentation/web-api/concepts/authorization
+  let token =
+    "BQDEj1upp2EsXgZLvxZU578Q7IRayuoFiC-6tSu-zXhSO0KxktzTjdLv60wFqy5tU0RfAuPT9zUnEC_Tm7N7_9GStw5jXjG_07gaT9zAC3y2fhqZ6CdS1iL7tWBshvW7-cj39RjPOpwYt8jW4Hi76vKvdItQq82IakejnkivDagC0SNPW7S5PfTemeyXKKDIBk_9u90PaiCUhVWzux42Arzw-o4RYsMRY7Jqk4P-1iSdRmy9xTFh7yd4_ChuOHBL5D62_sxvleBq59VhD0EX7KZK4z1xdkHT";
+  async function fetchWebApi(endpoint: string, method: string) {
     const res = await fetch(`https://api.spotify.com/${endpoint}`, {
       headers: {
-        Authorization: `Bearer ${tmpToken}`,
+        Authorization: `Bearer ${token}`,
       },
       method,
-      body: JSON.stringify(body),
     });
     return await res.json();
   }
-
+  let limitTrack = 5;
+  let topTracks: Track[] = [];
   async function getTopTracks() {
-    return (
-      await fetchWebApi("v1/me/top/tracks?time_range=long_term&limit=5", "GET")
-    ).items;
-  }
-  async function getUserTopTrack() {
-    const topTracks = await getTopTracks();
-    console.log(
-      topTracks?.map(
-        ({ name, artists }) =>
-          `${name} by ${artists.map((artist) => artist.name).join(", ")}`
+    // Endpoint reference : https://developer.spotify.com/documentation/web-api/reference/get-users-top-artists-and-tracks
+    const response = (
+      await fetchWebApi(
+        `v1/me/top/tracks?time_range=long_term&limit=${limitTrack}`,
+        "GET"
       )
-    );
+    ).items;
+    console.log(response);
+    topTracks = response;
   }
-
-  onMount(() => {
-    // exchangeAuthCodeForToken();
-    getUserTopTrack();
-  });
-
-  async function exchangeAuthCodeForToken() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const authCode = urlParams.get("code");
-
-    console.log("Authorization Code:", authCode);
-
-    const params = new URLSearchParams();
-    const clientId = "0ba62474fd4f42a596421f2ed1245481";
-    params.append("client_id", clientId);
-    params.append("client_secret", import.meta.env.VITE_CLIENT_SECRET);
-    params.append("grant_type", "client_credentials");
-    params.append("redirect_uri", "http://localhost:5173/callback");
-    let token = "";
-    await fetch("https://accounts.spotify.com/api/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params,
-    })
-      .then((response) => response.json())
-      .then((data) => (token = data.access_token));
-
-    console.log(token);
-    let tokenValue;
-    if (token) {
-      // Subscribe to the store to get the initial value
-      spotifyClientToken.set(token);
-      getUserTopTrack();
-    }
-  }
+  onMount(() => getTopTracks());
 </script>
 
-<p>Welcome to the user page.</p>
+<h2>See top user track of Cathy</h2>
+<input type="text" bind:value={token} />
+<input type="text" bind:value={limitTrack} />
+<button on:click={getTopTracks}>Get top tracks</button>
+<ul>
+  {#each topTracks as track}
+    <li>
+      {track.name} by {track.artists.map((artist) => artist.name).join(", ")}
+    </li>
+    <img src={track.album.images[0].url} alt={track.name} width="50%" />
+  {/each}
+</ul>
