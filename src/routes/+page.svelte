@@ -1,24 +1,37 @@
-<script lang="ts">
-  import { onMount } from "svelte";
-  import { setContext } from "svelte";
-  import { writable } from "svelte/store";
-  import { getContext } from "svelte";
+<script>
+  import { base64encode, generateRandomString, sha256 } from "./helpers/auth";
+  import { codeVerifierStore } from "./store";
+
   const clientId = import.meta.env.VITE_CLIENT_ID;
-  const responseType = "code";
   const redirectUri = "http://localhost:5173/user";
-  function login() {
-    // const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=${responseType}&redirect_uri=${redirectUri}`;
+  async function login() {
+    const scope = "user-read-private user-read-email user-top-read";
+    const codeVerifier = generateRandomString(64);
+    const authUrl = new URL("https://accounts.spotify.com/authorize");
+    const hashed = await sha256(codeVerifier);
+    const codeChallenge = base64encode(hashed);
 
-    // // Redirect the user to Spotify's authorization page
-    // window.location.href = url;
-    // // In your redirect callback page (http://localhost:5173/callback), grab the code from the URL
+    // generated in the previous step
+    window.localStorage.setItem("code_verifier", codeVerifier);
+    console.log(codeVerifier);
+    codeVerifierStore.set(codeVerifier);
 
-    window.location.href = "http://localhost:5173/user";
+    const params = {
+      response_type: "code",
+      client_id: clientId,
+      scope,
+      code_challenge_method: "S256",
+      code_challenge: codeChallenge,
+      redirect_uri: redirectUri,
+    };
+
+    authUrl.search = new URLSearchParams(params).toString();
+    window.location.href = authUrl.toString();
   }
 </script>
 
 <h2>Spotify app</h2>
-<button on:click={login}> Get user top track</button>
+<button on:click={login}>LOGIN</button>
 
 <p>
   Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation
