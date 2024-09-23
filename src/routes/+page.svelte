@@ -1,38 +1,39 @@
 <script>
-  import { base64encode, generateRandomString, sha256 } from "./helpers/auth";
-  import { codeVerifierStore } from "./store";
-
-  const clientId = import.meta.env.VITE_CLIENT_ID;
-  const redirectUri = "http://localhost:5173/user";
-  async function login() {
-    const scope = "user-read-private user-read-email user-top-read";
-    const codeVerifier = generateRandomString(64);
-    const authUrl = new URL("https://accounts.spotify.com/authorize");
-    const hashed = await sha256(codeVerifier);
-    const codeChallenge = base64encode(hashed);
-
-    // generated in the previous step
-    window.localStorage.setItem("code_verifier", codeVerifier);
-    console.log(codeVerifier);
-    codeVerifierStore.set(codeVerifier);
-
-    const params = {
-      response_type: "code",
-      client_id: clientId,
-      scope,
-      code_challenge_method: "S256",
-      code_challenge: codeChallenge,
-      redirect_uri: redirectUri,
-    };
-
-    authUrl.search = new URLSearchParams(params).toString();
-    window.location.href = authUrl.toString();
-  }
+  import { onMount } from "svelte";
+  import { goToPath } from "./helpers/nav";
+  import Navbar from "./components/Navbar.svelte";
+  let currentUser = "";
+  onMount(() => {
+    currentUser = localStorage.getItem("user") || "";
+  });
 </script>
 
-<h2>Spotify app</h2>
-<button on:click={login}>LOGIN</button>
+<div
+  class="h-screen flex flex-col bg-gradient-to-br align-middle from-indigo-500"
+>
+  <!-- <svelte:component this={Navbar} /> -->
+  <h1
+    class=" w-full text-left p-10 pt-10.5 text-4xl items-center align-middle tracking-wide sm:text-5xl md:text-6xl text-white"
+  >
+    Spotify App
+  </h1>
+  <h3 class="p-10 text-white text-xl">
+    An experimental app, using spotify API
+  </h3>
 
-<p>
-  Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation
-</p>
+  {#if currentUser}
+    <div class="p-10 items-center align-middle">
+      <button
+        class="bg-blue-500 align-middle items-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-fit"
+        on:click={() => goToPath("/user")}>Go to my profile</button
+      >
+    </div>
+  {:else}
+    <div class="p-10 items-center align-middle">
+      <button
+        class="bg-blue-500 align-middle items-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-fit"
+        on:click={() => goToPath("/login")}>Get started</button
+      >
+    </div>
+  {/if}
+</div>

@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import type { Track } from "../types";
   import { getTopTracks } from "../../helpers/spotify";
-  export let code;
   let topTracks: Track[] = [];
   async function getUserTopTracks() {
     topTracks = await getTopTracks();
