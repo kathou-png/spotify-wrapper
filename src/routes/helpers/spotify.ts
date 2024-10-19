@@ -9,10 +9,10 @@ async function fetchWebApi(endpoint: string, method: string, body?: any) {
   });
   return await res.json();
 }
-export async function getTopTracks() {
+export async function getTopTracks(timeRange: string) {
   // Endpoint reference : https://developer.spotify.com/documentation/web-api/reference/get-users-top-artists-and-tracks
   return (
-    await fetchWebApi("v1/me/top/tracks?time_range=long_term&limit=5", "GET")
+    await fetchWebApi(`v1/me/top/tracks?time_range=${timeRange}&limit=5`, "GET")
   ).items;
 }
 export async function getUserProfile() {

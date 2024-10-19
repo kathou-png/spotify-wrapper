@@ -1,39 +1,21 @@
-<script>
-  import { onMount } from "svelte";
-  import { goToPath } from "./helpers/nav";
-  import Navbar from "./components/Navbar.svelte";
-  let currentUser = "";
-  onMount(() => {
-    currentUser = localStorage.getItem("user") || "";
-  });
+<script lang="ts">
+  import { login } from "./helpers/auth";
 </script>
 
 <div
-  class="h-screen flex flex-col bg-gradient-to-br align-middle from-indigo-500"
+  class="h-screen flex items-center justify-center flex-col bg-gradient-to-br align-middle from-zinc-950 to-zinc-900"
 >
-  <!-- <svelte:component this={Navbar} /> -->
-  <h1
-    class=" w-full text-left p-10 pt-10.5 text-4xl items-center align-middle tracking-wide sm:text-5xl md:text-6xl text-white"
-  >
-    Spotify App
+  <h1 class="p-10 pt-10.5 text-4xl sm:text-5xl md:text-6xl text-white">
+    WrappedUp
   </h1>
   <h3 class="p-10 text-white text-xl">
     An experimental app, using spotify API
   </h3>
 
-  {#if currentUser}
-    <div class="p-10 items-center align-middle">
-      <button
-        class="bg-blue-500 align-middle items-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-fit"
-        on:click={() => goToPath("/user")}>Go to my profile</button
-      >
-    </div>
-  {:else}
-    <div class="p-10 items-center align-middle">
-      <button
-        class="bg-blue-500 align-middle items-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-fit"
-        on:click={() => goToPath("/login")}>Get started</button
-      >
-    </div>
-  {/if}
+  <div class="p-10 items-center align-middle">
+    <button
+      class="border-solid border-2 border-white align-middle items-center hover:border-dotted text-white font-bold py-2 px-14 rounded-lg w-fit"
+      on:click={() => login()}>Start</button
+    >
+  </div>
 </div>
